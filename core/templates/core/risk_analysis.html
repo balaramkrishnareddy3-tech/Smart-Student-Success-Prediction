@@ -1,0 +1,63 @@
+{% extends 'core/base.html' %}
+{% block title %}Risk Analysis · EduTrack AI{% endblock %}
+{% block page_name %}Risk Analysis{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <div class="eyebrow">STUDENT INTELLIGENCE / RISK ANALYSIS</div>
+    <h1>Student Risk Analysis</h1>
+    <p>Understand risk distribution and compare student support needs across departments.</p>
+  </div>
+  <div class="heading-actions"><a class="secondary-action" href="{% url 'dashboard' %}">← Overview</a><a class="primary-action" href="{% url 'student_list' %}">View students →</a></div>
+</div>
+
+<div class="stats-grid risk-stats">
+  <article class="stat-card"><div class="stat-top"><span class="stat-icon cyan">♙</span><span class="stat-label">TOTAL STUDENTS ANALYZED</span></div><div class="stat-value">{{ total }}</div><div class="stat-foot">Risk calculated from current academic indicators</div></article>
+  <article class="stat-card risk-stat-low"><div class="stat-top"><span class="stat-icon cyan">✓</span><span class="stat-label">LOW RISK</span></div><div class="stat-value">{{ low_count }}</div><div class="stat-foot">Currently within baseline thresholds</div></article>
+  <article class="stat-card risk-stat-medium"><div class="stat-top"><span class="stat-icon amber">!</span><span class="stat-label">MEDIUM RISK</span></div><div class="stat-value">{{ medium_count }}</div><div class="stat-foot">May benefit from academic support</div></article>
+  <article class="stat-card risk-stat-high"><div class="stat-top"><span class="stat-icon violet">⚠</span><span class="stat-label">HIGH RISK</span></div><div class="stat-value">{{ high_count }}</div><div class="stat-foot">Prioritize teacher review and follow-up</div></article>
+</div>
+
+<div class="risk-analysis-grid">
+  <section class="dash-panel risk-graph-panel">
+    <div class="panel-heading"><div><h2>Overall risk distribution</h2><p>Number of students in each risk category</p></div><span class="panel-tag">BAR GRAPH</span></div>
+    {% if total %}<div class="risk-bar-wrap"><canvas id="riskCategoryBar"></canvas></div>{% else %}<div class="empty-state"><b>No student records available</b><span>Import or add students to generate risk analysis.</span><a href="{% url 'student_list' %}">Open students →</a></div>{% endif %}
+  </section>
+  <section class="dash-panel risk-graph-panel">
+    <div class="panel-heading"><div><h2>Department-wise risk comparison</h2><p>Low, medium and high risk by department</p></div><span class="panel-tag">STACKED BAR</span></div>
+    {% if total %}<div class="risk-bar-wrap"><canvas id="departmentRiskBar"></canvas></div>{% else %}<div class="empty-state"><b>Waiting for student data</b><span>Department comparison will appear here.</span></div>{% endif %}
+  </section>
+</div>
+
+<section class="dash-panel risk-students-panel">
+  <div class="panel-heading"><div><h2>Students requiring attention</h2><p>Highest-priority students based on attendance, marks and backlogs</p></div><span class="panel-tag warning-tag">HIGH RISK · TOP 25</span></div>
+  <div class="table-responsive">
+    <table class="student-table">
+      <thead><tr><th>STUDENT</th><th>DEPARTMENT</th><th>ATTENDANCE</th><th>INTERNAL MARKS</th><th>BACKLOGS</th><th>RISK</th><th>PROFILE</th></tr></thead>
+      <tbody>
+      {% for row in high_risk_students %}
+        <tr>
+          <td><div class="student-cell"><div class="avatar student-avatar">{{ row.student.name|slice:":1"|upper }}</div><div><b>{{ row.student.name }}</b><small>{{ row.student.student_id }}</small></div></div></td>
+          <td>{{ row.student.department }}</td><td>{{ row.student.attendance|floatformat:1 }}%</td><td>{{ row.student.internal_marks|floatformat:1 }}</td><td>{{ row.student.backlogs }}</td>
+          <td><span class="status-pill high">High risk</span></td><td><a class="row-link" href="{% url 'student_detail' row.student.pk %}">View ↗</a></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="7"><div class="table-empty">No high-risk students identified by the current baseline rules.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="notice-box">Risk categories are calculated using the project's transparent baseline prediction function. They are decision-support indicators, not validated clinical or academic judgments. Review individual records before taking action.</div>
+</section>
+
+<script>
+window.riskAnalysisData = {
+  labels: {{ risk_labels_json|safe }},
+  values: {{ risk_values_json|safe }},
+  departments: {{ department_labels_json|safe }},
+  departmentHigh: {{ department_high_json|safe }},
+  departmentMedium: {{ department_medium_json|safe }},
+  departmentLow: {{ department_low_json|safe }}
+};
+</script>
+{% endblock %}

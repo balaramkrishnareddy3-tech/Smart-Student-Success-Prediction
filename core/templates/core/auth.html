@@ -1,0 +1,1 @@
+{% extends 'core/base.html' %}{% block content %}<div class="auth-card mx-auto"><h2>{{ heading }}</h2><p class="text-secondary">Create a student or teacher account.</p><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-primary w-100">{{ button }}</button></form></div>{% endblock %}

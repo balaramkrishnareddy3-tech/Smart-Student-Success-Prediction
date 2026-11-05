@@ -1,0 +1,8 @@
+__pycache__/
+*.py[cod]
+.venv/
+db.sqlite3
+.env
+media/
+ml_engine/*.joblib
+ml_engine/metrics.json
